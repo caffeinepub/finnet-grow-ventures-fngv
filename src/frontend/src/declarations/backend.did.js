@@ -49,6 +49,25 @@ export const Commission = IDL.Record({
   'amount' : IDL.Nat,
   'associate' : IDL.Principal,
 });
+export const FixedReferralBonusSummary = IDL.Record({
+  'level6Count' : IDL.Nat,
+  'level1Count' : IDL.Nat,
+  'totalLevel3Amount' : IDL.Nat,
+  'level4Count' : IDL.Nat,
+  'totalLevel4Amount' : IDL.Nat,
+  'lastUpdated' : Time,
+  'totalLevel5Amount' : IDL.Nat,
+  'level7Count' : IDL.Nat,
+  'level2Count' : IDL.Nat,
+  'totalLevel6Amount' : IDL.Nat,
+  'totalBonuses' : IDL.Nat,
+  'totalAmount' : IDL.Nat,
+  'level5Count' : IDL.Nat,
+  'totalLevel7Amount' : IDL.Nat,
+  'totalLevel1Amount' : IDL.Nat,
+  'level3Count' : IDL.Nat,
+  'totalLevel2Amount' : IDL.Nat,
+});
 export const Order = IDL.Record({
   'id' : IDL.Nat,
   'status' : IDL.Text,
@@ -56,6 +75,14 @@ export const Order = IDL.Record({
   'productId' : IDL.Nat,
   'totalAmount' : IDL.Nat,
   'quantity' : IDL.Nat,
+  'associate' : IDL.Principal,
+});
+export const ReferralBonus = IDL.Record({
+  'id' : IDL.Nat,
+  'level' : IDL.Nat,
+  'referralBy' : IDL.Principal,
+  'timestamp' : Time,
+  'amount' : IDL.Nat,
   'associate' : IDL.Principal,
 });
 
@@ -67,6 +94,7 @@ export const idlService = IDL.Service({
       [Product],
       [],
     ),
+  'designateIdProduct' : IDL.Func([IDL.Nat], [], []),
   'getAllPayoutRequests' : IDL.Func([], [IDL.Vec(PayoutRequest)], ['query']),
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -96,10 +124,17 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getFixedReferralBonusSummary' : IDL.Func(
+      [],
+      [FixedReferralBonusSummary],
+      ['query'],
+    ),
+  'getIdProducts' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
   'getMyPayoutRequests' : IDL.Func([], [IDL.Vec(PayoutRequest)], ['query']),
   'getOrderHistory' : IDL.Func([IDL.Principal], [IDL.Vec(Order)], ['query']),
   'getProduct' : IDL.Func([IDL.Nat], [Product], ['query']),
   'getProductsByCategory' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),
+  'getReferralBonusHistory' : IDL.Func([], [IDL.Vec(ReferralBonus)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -111,6 +146,7 @@ export const idlService = IDL.Service({
   'placeOrder' : IDL.Func([IDL.Nat, IDL.Nat], [Order], []),
   'processPayoutRequest' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
   'registerWithReferral' : IDL.Func([UserProfile, IDL.Text], [], []),
+  'removeIdProduct' : IDL.Func([IDL.Nat], [], []),
   'requestPayout' : IDL.Func([IDL.Nat], [PayoutRequest], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'updateProduct' : IDL.Func(
@@ -165,6 +201,25 @@ export const idlFactory = ({ IDL }) => {
     'amount' : IDL.Nat,
     'associate' : IDL.Principal,
   });
+  const FixedReferralBonusSummary = IDL.Record({
+    'level6Count' : IDL.Nat,
+    'level1Count' : IDL.Nat,
+    'totalLevel3Amount' : IDL.Nat,
+    'level4Count' : IDL.Nat,
+    'totalLevel4Amount' : IDL.Nat,
+    'lastUpdated' : Time,
+    'totalLevel5Amount' : IDL.Nat,
+    'level7Count' : IDL.Nat,
+    'level2Count' : IDL.Nat,
+    'totalLevel6Amount' : IDL.Nat,
+    'totalBonuses' : IDL.Nat,
+    'totalAmount' : IDL.Nat,
+    'level5Count' : IDL.Nat,
+    'totalLevel7Amount' : IDL.Nat,
+    'totalLevel1Amount' : IDL.Nat,
+    'level3Count' : IDL.Nat,
+    'totalLevel2Amount' : IDL.Nat,
+  });
   const Order = IDL.Record({
     'id' : IDL.Nat,
     'status' : IDL.Text,
@@ -172,6 +227,14 @@ export const idlFactory = ({ IDL }) => {
     'productId' : IDL.Nat,
     'totalAmount' : IDL.Nat,
     'quantity' : IDL.Nat,
+    'associate' : IDL.Principal,
+  });
+  const ReferralBonus = IDL.Record({
+    'id' : IDL.Nat,
+    'level' : IDL.Nat,
+    'referralBy' : IDL.Principal,
+    'timestamp' : Time,
+    'amount' : IDL.Nat,
     'associate' : IDL.Principal,
   });
   
@@ -183,6 +246,7 @@ export const idlFactory = ({ IDL }) => {
         [Product],
         [],
       ),
+    'designateIdProduct' : IDL.Func([IDL.Nat], [], []),
     'getAllPayoutRequests' : IDL.Func([], [IDL.Vec(PayoutRequest)], ['query']),
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -212,12 +276,23 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getFixedReferralBonusSummary' : IDL.Func(
+        [],
+        [FixedReferralBonusSummary],
+        ['query'],
+      ),
+    'getIdProducts' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
     'getMyPayoutRequests' : IDL.Func([], [IDL.Vec(PayoutRequest)], ['query']),
     'getOrderHistory' : IDL.Func([IDL.Principal], [IDL.Vec(Order)], ['query']),
     'getProduct' : IDL.Func([IDL.Nat], [Product], ['query']),
     'getProductsByCategory' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(Product)],
+        ['query'],
+      ),
+    'getReferralBonusHistory' : IDL.Func(
+        [],
+        [IDL.Vec(ReferralBonus)],
         ['query'],
       ),
     'getUserProfile' : IDL.Func(
@@ -231,6 +306,7 @@ export const idlFactory = ({ IDL }) => {
     'placeOrder' : IDL.Func([IDL.Nat, IDL.Nat], [Order], []),
     'processPayoutRequest' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
     'registerWithReferral' : IDL.Func([UserProfile, IDL.Text], [], []),
+    'removeIdProduct' : IDL.Func([IDL.Nat], [], []),
     'requestPayout' : IDL.Func([IDL.Nat], [PayoutRequest], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'updateProduct' : IDL.Func(

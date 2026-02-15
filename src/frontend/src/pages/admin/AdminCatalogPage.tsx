@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllProducts, useCreateProduct, useUpdateProduct, useIsCallerAdmin } from '../../hooks/useQueries';
+import { useGetAllProducts, useCreateProduct, useUpdateProduct, useIsCallerAdmin, useGetIdProducts, useDesignateIdProduct, useRemoveIdProduct } from '../../hooks/useQueries';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -9,10 +9,11 @@ import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { LoadingState, EmptyState } from '../../components/common/QueryState';
-import { Shield, Plus, Edit } from 'lucide-react';
+import { Shield, Plus, Edit, Award } from 'lucide-react';
 import { formatMoney, formatDate } from '../../components/formatters/moneyTime';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
+import { Badge } from '../../components/ui/badge';
 import { toast } from 'sonner';
 import type { Product } from '../../backend';
 import AccessDeniedPage from '../AccessDeniedPage';
@@ -22,8 +23,11 @@ export default function AdminCatalogPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
   const { data: products, isLoading: productsLoading } = useGetAllProducts();
+  const { data: idProducts, isLoading: idProductsLoading } = useGetIdProducts();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+  const designateIdProduct = useDesignateIdProduct();
+  const removeIdProduct = useRemoveIdProduct();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -37,13 +41,17 @@ export default function AdminCatalogPage() {
     return null;
   }
 
-  if (adminLoading || productsLoading) {
+  if (adminLoading || productsLoading || idProductsLoading) {
     return <LoadingState message="Loading admin panel..." />;
   }
 
   if (!isAdmin) {
     return <AccessDeniedPage />;
   }
+
+  const isIdProduct = (productId: bigint): boolean => {
+    return idProducts?.some(id => id === productId) || false;
+  };
 
   const handleOpenDialog = (product?: Product) => {
     if (product) {
@@ -98,6 +106,20 @@ export default function AdminCatalogPage() {
       setDialogOpen(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to save product');
+    }
+  };
+
+  const handleToggleIdProduct = async (productId: bigint) => {
+    try {
+      if (isIdProduct(productId)) {
+        await removeIdProduct.mutateAsync(productId);
+        toast.success('Associate-ID designation removed');
+      } else {
+        await designateIdProduct.mutateAsync(productId);
+        toast.success('Product designated as Associate-ID trigger');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update designation');
     }
   };
 
@@ -167,7 +189,7 @@ export default function AdminCatalogPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Products</CardTitle>
-          <CardDescription>Manage your catalog items</CardDescription>
+          <CardDescription>Manage your catalog items and designate Associate-ID purchase triggers</CardDescription>
         </CardHeader>
         <CardContent>
           {!products || products.length === 0 ? (
@@ -180,6 +202,7 @@ export default function AdminCatalogPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead>Associate-ID</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Updated</TableHead>
                   <TableHead></TableHead>
@@ -192,12 +215,32 @@ export default function AdminCatalogPage() {
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell className="font-semibold">{formatMoney(product.price)}</TableCell>
+                    <TableCell>
+                      {isIdProduct(product.id) ? (
+                        <Badge variant="default" className="gap-1">
+                          <Award className="h-3 w-3" />
+                          ID Product
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Standard</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{formatDate(product.createdAt)}</TableCell>
                     <TableCell>{formatDate(product.updatedAt)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(product)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(product)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={isIdProduct(product.id) ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handleToggleIdProduct(product.id)}
+                          disabled={designateIdProduct.isPending || removeIdProduct.isPending}
+                        >
+                          <Award className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

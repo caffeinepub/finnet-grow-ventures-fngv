@@ -1,6 +1,56 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "No-op: BuildRequest has no frontend requirements",
-  "requirements": []
+  "title": "Frontend updates for Associate-ID designation and separate 7-level referral bonus UI",
+  "requirements": [
+    {
+      "id": "REQ-13",
+      "summary": "Allow admins to designate catalog products as Associate-ID purchase triggers from the Admin Catalog screen.",
+      "acceptanceCriteria": [
+        "An admin can create/update a catalog item such that it is clearly designated as an Associate-ID purchase trigger (e.g., a boolean flag or a well-defined category value stored on the product).",
+        "When a non-designated product is delivered, no 7-level bonus payouts are created.",
+        "When a designated Associate-ID product is delivered, the 7-level bonus payouts are created according to REQ-11.",
+        "The frontend Admin Catalog screen allows admins to set/see this designation when creating/updating products."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query hooks/mutations for Associate-ID designation management using existing backend capabilities: fetch designated Associate-ID product ids (getIdProducts) and update designation (designateIdProduct, removeIdProduct). Ensure queries invalidate product/id-product lists appropriately after mutations."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminCatalogPage.tsx",
+          "operation": "modify",
+          "description": "Update the Admin Catalog UI to display whether each product is designated as an Associate-ID trigger (using getIdProducts) and provide admin actions to set/unset the designation (using designateIdProduct/removeIdProduct). Use existing shadcn/ui components already in the page (e.g., Table, Badge, Button, Dialog) to keep the designation clearly visible and editable. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "summary": "Display separate Referral Bonus (7-level fixed bonus) totals and history in earnings-related UI, without breaking existing commissions UI.",
+      "acceptanceCriteria": [
+        "The app fetches the new referral-bonus dashboard from the backend via React Query (add new hooks alongside existing earnings hooks).",
+        "Earnings-related pages (at minimum Earnings page and Dashboard earnings summary card) show a clearly labeled section for \"Referral Bonus\" (or equivalent) separate from \"Commissions\".",
+        "A user can view a table/list of referral-bonus events showing level, amount, date, and the triggering order id.",
+        "Existing commission UI continues to work (even if it becomes empty going forward), and the new bonus UI does not break route protection or loading states."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query hooks for the separate referral-bonus data: fetch the fixed referral bonus summary (getFixedReferralBonusSummary) and fetch referral bonus history (getReferralBonusHistory). Keep these hooks alongside existing earnings hooks and ensure they respect actor availability/loading."
+        },
+        {
+          "path": "frontend/src/pages/EarningsPage.tsx",
+          "operation": "modify",
+          "description": "Extend the Earnings page to include a new, clearly labeled \"Referral Bonus\" section separate from \"Commission History\". Show referral-bonus summary totals (from getFixedReferralBonusSummary) and a dedicated table/list for referral-bonus events (from getReferralBonusHistory) including level, amount, date, and triggering order id. Use existing shadcn/ui components in this page (Card, Table, Select, Badge, EmptyState/LoadingState) and English user-facing text. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "modify",
+          "description": "Update the dashboard earnings summary card to include a separate \"Referral Bonus\" line/total (from the fixed referral bonus summary) while keeping existing \"Total Earned\", \"Total Withdrawn\", and \"Available Balance\" lines intact. Ensure loading/error states remain consistent with existing dashboard behavior and user-facing text remains English. Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
 }

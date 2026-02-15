@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { useInternetIdentity } from './useInternetIdentity';
-import type { UserProfile, Product, Order, Commission, PayoutRequest } from '../backend';
+import type { UserProfile, Product, Order, Commission, PayoutRequest, ReferralBonus, FixedReferralBonusSummary } from '../backend';
 import type { Principal } from '@dfinity/principal';
 
 // ============ USER PROFILE ============
@@ -203,6 +203,53 @@ export function useUpdateProduct() {
   });
 }
 
+// ============ ID PRODUCT MANAGEMENT ============
+
+export function useGetIdProducts() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<bigint[]>({
+    queryKey: ['idProducts'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getIdProducts();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useDesignateIdProduct() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.designateIdProduct(productId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['idProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}
+
+export function useRemoveIdProduct() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.removeIdProduct(productId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['idProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}
+
 // ============ ORDERS ============
 
 export function usePlaceOrder() {
@@ -249,6 +296,34 @@ export function useGetEarningsDashboard() {
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getEarningsDashboard();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+// ============ REFERRAL BONUS (7-LEVEL) ============
+
+export function useGetFixedReferralBonusSummary() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<FixedReferralBonusSummary>({
+    queryKey: ['referralBonusSummary'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getFixedReferralBonusSummary();
+    },
+    enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useGetReferralBonusHistory() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<ReferralBonus[]>({
+    queryKey: ['referralBonusHistory'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getReferralBonusHistory();
     },
     enabled: !!actor && !actorFetching,
   });

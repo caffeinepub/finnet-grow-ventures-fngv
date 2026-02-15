@@ -1,10 +1,10 @@
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useGetCallerUserProfile, useGetDirectReferrals, useGetEarningsDashboard, useGetOrderHistory } from '../hooks/useQueries';
+import { useGetCallerUserProfile, useGetDirectReferrals, useGetEarningsDashboard, useGetOrderHistory, useGetFixedReferralBonusSummary } from '../hooks/useQueries';
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { LoadingState, ErrorState } from '../components/common/QueryState';
-import { Users, DollarSign, Package, Copy, Check } from 'lucide-react';
+import { Users, DollarSign, Package, Copy, Check, Award } from 'lucide-react';
 import { formatMoney } from '../components/formatters/moneyTime';
 import { buildReferralLink, copyToClipboard } from '../utils/referrals';
 import { useState } from 'react';
@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const { data: profile, isLoading: profileLoading } = useGetCallerUserProfile();
   const { data: referrals, isLoading: referralsLoading } = useGetDirectReferrals();
   const { data: earnings, isLoading: earningsLoading } = useGetEarningsDashboard();
+  const { data: bonusSummary, isLoading: bonusSummaryLoading } = useGetFixedReferralBonusSummary();
   const { data: orders, isLoading: ordersLoading } = useGetOrderHistory();
   const [copied, setCopied] = useState(false);
 
@@ -24,7 +25,7 @@ export default function DashboardPage() {
     return null;
   }
 
-  if (profileLoading || referralsLoading || earningsLoading || ordersLoading) {
+  if (profileLoading || referralsLoading || earningsLoading || ordersLoading || bonusSummaryLoading) {
     return <LoadingState message="Loading dashboard..." />;
   }
 
@@ -138,6 +139,16 @@ export default function DashboardPage() {
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Available Balance</span>
               <span className="font-semibold text-primary">{formatMoney(earnings?.balance || BigInt(0))}</span>
+            </div>
+            <div className="pt-2 border-t">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Award className="h-4 w-4" />
+                  Referral Bonus
+                </span>
+                <span className="font-semibold text-primary">{formatMoney(bonusSummary?.totalAmount || BigInt(0))}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{bonusSummary?.totalBonuses.toString() || '0'} bonuses earned</p>
             </div>
           </CardContent>
         </Card>

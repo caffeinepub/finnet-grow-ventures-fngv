@@ -1,4 +1,46 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-add-backend-support-to-designate-which-catalog-product-s-represent-purchasing-a-new-associate-id-number-so-that-only-those-orders-trigger-the-7-level-referral-bonus",
+      "featureTitle": "Add backend support to designate which catalog product(s) represent purchasing a \"new associate id number\" so that only those orders trigger the 7-level referral bonus.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/admin/AdminCatalogPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-frontend-earnings-ui-to-display-the-new-7-level-referral-bonus-summary-and-bonus-history-separately-from-the-existing-commission-history-using-english-user-facing-text",
+      "featureTitle": "Update the frontend earnings UI to display the new 7-level referral bonus summary and bonus history separately from the existing commission history, using English user-facing text.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/DashboardPage.tsx",
+        "frontend/src/pages/EarningsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-14"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

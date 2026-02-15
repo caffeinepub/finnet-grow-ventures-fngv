@@ -54,6 +54,15 @@ actor {
     timestamp : Time.Time;
   };
 
+  type ReferralBonus = {
+    id : Nat;
+    associate : Principal;
+    referralBy : Principal;
+    amount : Nat;
+    level : Nat; // Level 1-7 (fixed amounts)
+    timestamp : Time.Time;
+  };
+
   type PayoutRequest = {
     id : Nat;
     associate : Principal;
@@ -77,6 +86,26 @@ actor {
     timestamp : Time.Time;
   };
 
+  type FixedReferralBonusSummary = {
+    totalBonuses : Nat;
+    totalAmount : Nat;
+    level1Count : Nat;
+    level2Count : Nat;
+    level3Count : Nat;
+    level4Count : Nat;
+    level5Count : Nat;
+    level6Count : Nat;
+    level7Count : Nat;
+    totalLevel1Amount : Nat;
+    totalLevel2Amount : Nat;
+    totalLevel3Amount : Nat;
+    totalLevel4Amount : Nat;
+    totalLevel5Amount : Nat;
+    totalLevel6Amount : Nat;
+    totalLevel7Amount : Nat;
+    lastUpdated : Time.Time;
+  };
+
   // Persistent storage
   let userProfiles = Map.empty<Principal, UserProfile>();
   let products = Map.empty<Nat, Product>();
@@ -86,12 +115,15 @@ actor {
   let payoutRequests = Map.empty<Nat, PayoutRequest>();
   let referrals = Map.empty<Principal, Referral>(); // referee -> referral info
   let referralCodes = Map.empty<Text, Principal>(); // code -> principal
+  let referralBonuses = Map.empty<Nat, ReferralBonus>();
+  let idProduct = Map.empty<Nat, ()>();
 
   // Counters
   var nextProductId = 1 : Nat;
   var nextOrderId = 1 : Nat;
   var nextCommissionId = 1 : Nat;
   var nextPayoutRequestId = 1 : Nat;
+  var nextReferralBonusId = 1 : Nat;
 
   // ============ USER PROFILE MANAGEMENT ============
 
@@ -113,7 +145,7 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
-    
+
     // Validate referral code uniqueness
     switch (referralCodes.get(profile.referralCode)) {
       case (?existingOwner) {
@@ -378,6 +410,9 @@ actor {
 
         // Trigger commission calculation
         calculateCommissions(order);
+
+        // Trigger referral bonus calculation (7-level fixed bonuses)
+        calculateReferralBonuses(order);
       };
     };
   };
@@ -422,6 +457,46 @@ actor {
             commissions.add(nextCommissionId, commission2);
             nextCommissionId += 1;
             creditWallet(referral2.referrer, level2Amount);
+          };
+        };
+      };
+    };
+  };
+
+  // --- Fixed 7-level Referral Bonus Calculation ---
+  private func calculateReferralBonuses(order : Order) {
+    // Only pay referral bonus when Associate-ID product is ordered
+    switch (idProduct.get(order.productId)) {
+      case (null) {};
+      case (?_) {
+        // Fixed amounts for each level in cents (7 levels)
+        let bonusAmounts = [10000, 5000, 2500, 1000, 1000, 500, 500];
+
+        // Traverse up the referral chain (up to 7 levels)
+        var currentAssociate = order.associate;
+        var level = 1;
+
+        for (bonus in bonusAmounts.vals()) {
+          switch (referrals.get(currentAssociate)) {
+            case (null) {
+              return; // No more referrers, stop traversal
+            };
+            case (?referral) {
+              let bonusRecord : ReferralBonus = {
+                id = nextReferralBonusId;
+                associate = referral.referrer;
+                referralBy = currentAssociate;
+                amount = bonus;
+                level;
+                timestamp = Time.now();
+              };
+              referralBonuses.add(nextReferralBonusId, bonusRecord);
+              nextReferralBonusId += 1;
+              creditWallet(referral.referrer, bonus);
+
+              currentAssociate := referral.referrer;
+              level += 1; // Move to next level
+            };
           };
         };
       };
@@ -496,6 +571,73 @@ actor {
       totalWithdrawn = wallet.totalWithdrawn;
       commissionHistory = commissionList.toArray();
     };
+  };
+
+  public query ({ caller }) func getFixedReferralBonusSummary() : async FixedReferralBonusSummary {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view referral summary");
+    };
+
+    let bonuses = referralBonuses.values().toArray();
+    let userBonuses = bonuses.filter(func(b) { b.associate == caller });
+
+    var totalBonuses = 0;
+    var totalAmount = 0;
+    var levelCounts = Array.tabulate(7, func(_) { 0 });
+    var levelAmounts = Array.tabulate(7, func(_) { 0 });
+
+    for (bonus in userBonuses.vals()) {
+      totalBonuses += 1;
+      totalAmount += bonus.amount;
+
+      let idx = bonus.level - 1;
+      if (idx < 7) {
+        levelCounts := Array.tabulate(levelCounts.size(), func(i) {
+          if (i == idx) { levelCounts[i] + 1 } else {
+            levelCounts[i]; // levelAmounts[idx] += bonus.amount;
+          };
+        });
+        levelAmounts := Array.tabulate(levelAmounts.size(), func(i) {
+          if (i == idx) { levelAmounts[i] + bonus.amount } else {
+            levelAmounts[i];
+          };
+        });
+      };
+    };
+
+    {
+      totalBonuses;
+      totalAmount;
+      level1Count = levelCounts[0];
+      level2Count = levelCounts[1];
+      level3Count = levelCounts[2];
+      level4Count = levelCounts[3];
+      level5Count = levelCounts[4];
+      level6Count = levelCounts[5];
+      level7Count = levelCounts[6];
+      totalLevel1Amount = levelAmounts[0];
+      totalLevel2Amount = levelAmounts[1];
+      totalLevel3Amount = levelAmounts[2];
+      totalLevel4Amount = levelAmounts[3];
+      totalLevel5Amount = levelAmounts[4];
+      totalLevel6Amount = levelAmounts[5];
+      totalLevel7Amount = levelAmounts[6];
+      lastUpdated = Time.now();
+    };
+  };
+
+  public query ({ caller }) func getReferralBonusHistory() : async [ReferralBonus] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view referral bonus history");
+    };
+
+    let results = List.empty<ReferralBonus>();
+    for ((_, bonus) in referralBonuses.entries()) {
+      if (bonus.associate == caller) {
+        results.add(bonus);
+      };
+    };
+    results.toArray();
   };
 
   // ============ PAYOUT REQUESTS ============
@@ -605,5 +747,49 @@ actor {
     };
 
     creditWallet(associate, amount);
+  };
+
+  // ============ ID PRODUCT MANAGEMENT ============
+
+  public shared ({ caller }) func designateIdProduct(productId : Nat) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can designate id-product");
+    };
+
+    switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product does not exist.") };
+      case (?_) {
+        if (idProduct.containsKey(productId)) {
+          Runtime.trap("This product is already an id-product.");
+        } else {
+          idProduct.add(productId, ());
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeIdProduct(productId : Nat) : async () {
+    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+      Runtime.trap("Unauthorized: Only admins can remove id-product");
+    };
+
+    switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product does not exist.") };
+      case (?_) {
+        if (idProduct.containsKey(productId)) {
+          idProduct.remove(productId);
+        } else {
+          Runtime.trap("This product is not an id-product.");
+        };
+      };
+    };
+  };
+
+  public query ({ caller }) func getIdProducts() : async [Nat] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view id-products");
+    };
+
+    idProduct.keys().toArray();
   };
 };

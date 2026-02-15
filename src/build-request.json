@@ -1,16 +1,101 @@
 {
   "kind": "build_request",
-  "title": "Clarify requested features (already implemented in current app)",
+  "title": "Replace referral commission with fixed 7-level referral bonus (separate tracking)",
   "priority": "normal",
-  "requirements": [],
+  "requirements": [
+    {
+      "id": "REQ-11",
+      "text": "Replace the existing referral commission calculation with a fixed-amount 7-level referral bonus that is paid out only when a referred associate buys a \"new associate id number\" (i.e., an order for a designated Associate-ID product). The fixed bonuses must be: Level 1 = Rs.100.00, Level 2 = Rs.50.00, Level 3 = Rs.25.00, Level 4 = Rs.10.00, Level 5 = Rs.10.00, Level 6 = Rs.5.00, Level 7 = Rs.5.00.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "1st level referral bonus - Rs.100.00 , 2nd level referral bonus - Rs.50/- , 3rd level referral bonus - Rs.25.00, 4th level referral bonus - Rs.10.00, 5th level referral bonus - Rs.10.00, 6th level referral bonus - Rs.5.00, 7th level referral bonus - Rs.5.00.  the bonus Should trigger only when a referred associate when they buy a new associate id number.",
+          "7‑level bonus to replace the current referral commission entirely"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When an admin marks an order as DELIVERED, no percentage-based commissions (the old 2-level 10%/5% logic) are created or credited for that order.",
+        "If the delivered order is for a product designated as an Associate-ID purchase, the system walks up the referrer chain up to 7 levels (based on the existing referrals graph) and creates a fixed bonus payout for each eligible upline associate using the exact amounts provided by the user.",
+        "If there is no referrer at some level (chain ends before level 7), bonuses stop at that level and no further bonuses are created.",
+        "If the Associate-ID purchase quantity is greater than 1, bonus calculation behavior is deterministic and documented/consistent (e.g., applies per order, not per unit) and covered by tests or clear logic comments.",
+        "The old Commission ledger is no longer used for referral payouts for Associate-ID purchases."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Track the 7-level referral bonus payouts separately from the existing commission/earnings ledger, including separate storage, separate history list, and separate summary totals retrievable by the frontend.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the payouts Should be tracked separately."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new backend query returns a referral-bonus dashboard object containing at least: totalBonusEarned and bonusHistory (and any additional totals needed by the UI).",
+        "Bonus events include enough fields for UI display (at minimum: event id, recipient associate principal, triggering order id, level, amount, timestamp).",
+        "Existing getEarningsDashboard continues to function for the existing earnings/commission module, but it does not include the new 7-level bonus events in commissionHistory.",
+        "No payout request logic is broken by the addition of separate tracking (existing payout requests continue to function against the existing wallet/balance unless explicitly extended in a separate requirement)."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Add backend support to designate which catalog product(s) represent purchasing a \"new associate id number\" so that only those orders trigger the 7-level referral bonus.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the bonus Should trigger only when a referred associate when they buy a new associate id number."
+        ]
+      },
+      "acceptanceCriteria": [
+        "An admin can create/update a catalog item such that it is clearly designated as an Associate-ID purchase trigger (e.g., a boolean flag or a well-defined category value stored on the product).",
+        "When a non-designated product is delivered, no 7-level bonus payouts are created.",
+        "When a designated Associate-ID product is delivered, the 7-level bonus payouts are created according to REQ-11.",
+        "The frontend Admin Catalog screen allows admins to set/see this designation when creating/updating products."
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Update the frontend earnings UI to display the new 7-level referral bonus summary and bonus history separately from the existing commission history, using English user-facing text.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the payouts Should be tracked separately.",
+          "7‑level bonus to replace the current referral commission entirely"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The app fetches the new referral-bonus dashboard from the backend via React Query (add new hooks alongside existing earnings hooks).",
+        "Earnings-related pages (at minimum Earnings page and Dashboard earnings summary card) show a clearly labeled section for \"Referral Bonus\" (or equivalent) separate from \"Commissions\".",
+        "A user can view a table/list of referral-bonus events showing level, amount, date, and the triggering order id.",
+        "Existing commission UI continues to work (even if it becomes empty going forward), and the new bonus UI does not break route protection or loading states."
+      ]
+    }
+  ],
   "constraints": [
-    "Do not modify files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
-    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if a stable-state upgrade is required.",
-    "Use English for all user-facing UI text."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend/immutablePaths (compose existing UI components instead).",
+    "Use English for any user-facing text.",
+    "The new 7-level referral bonus must replace the current referral commission entirely for the specified trigger (Associate-ID purchase).",
+    "The 7-level referral bonus payouts must be tracked separately from the existing commission ledger."
   ],
   "nonGoals": [
-    "Adding new product features beyond what is already implemented (authentication, dashboard, referrals, network view, catalog, orders, earnings, payouts, admin).",
-    "Changing the technology stack or adding external services/integrations."
+    "Implementing third-party authentication providers (only Internet Identity is supported).",
+    "Adding real-time updates (no WebSockets).",
+    "Changing the domain/deployment naming validation behavior.",
+    "Adding external databases or off-chain storage.",
+    "Changing payout requests to withdraw from the new referral-bonus balances unless explicitly requested later."
   ],
   "imageRequirements": {
     "required": [],

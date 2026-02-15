@@ -89,6 +89,14 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface ReferralBonus {
+    id: bigint;
+    level: bigint;
+    referralBy: Principal;
+    timestamp: Time;
+    amount: bigint;
+    associate: Principal;
+}
 export type Time = bigint;
 export interface Commission {
     id: bigint;
@@ -107,6 +115,25 @@ export interface PayoutRequest {
     requestDate: Time;
     associate: Principal;
 }
+export interface FixedReferralBonusSummary {
+    level6Count: bigint;
+    level1Count: bigint;
+    totalLevel3Amount: bigint;
+    level4Count: bigint;
+    totalLevel4Amount: bigint;
+    lastUpdated: Time;
+    totalLevel5Amount: bigint;
+    level7Count: bigint;
+    level2Count: bigint;
+    totalLevel6Amount: bigint;
+    totalBonuses: bigint;
+    totalAmount: bigint;
+    level5Count: bigint;
+    totalLevel7Amount: bigint;
+    totalLevel1Amount: bigint;
+    level3Count: bigint;
+    totalLevel2Amount: bigint;
+}
 export interface Order {
     id: bigint;
     status: string;
@@ -115,15 +142,6 @@ export interface Order {
     totalAmount: bigint;
     quantity: bigint;
     associate: Principal;
-}
-export interface UserProfile {
-    status: string;
-    referralCode: string;
-    joinDate: Time;
-    name: string;
-    email: string;
-    referredBy?: Principal;
-    phone: string;
 }
 export interface Product {
     id: bigint;
@@ -134,6 +152,15 @@ export interface Product {
     category: string;
     price: bigint;
 }
+export interface UserProfile {
+    status: string;
+    referralCode: string;
+    joinDate: Time;
+    name: string;
+    email: string;
+    referredBy?: Principal;
+    phone: string;
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -143,6 +170,7 @@ export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createProduct(name: string, desc: string, price: bigint, category: string): Promise<Product>;
+    designateIdProduct(productId: bigint): Promise<void>;
     getAllPayoutRequests(): Promise<Array<PayoutRequest>>;
     getAllProducts(): Promise<Array<Product>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -160,10 +188,13 @@ export interface backendInterface {
         commissionHistory: Array<Commission>;
         totalWithdrawn: bigint;
     }>;
+    getFixedReferralBonusSummary(): Promise<FixedReferralBonusSummary>;
+    getIdProducts(): Promise<Array<bigint>>;
     getMyPayoutRequests(): Promise<Array<PayoutRequest>>;
     getOrderHistory(user: Principal): Promise<Array<Order>>;
     getProduct(productId: bigint): Promise<Product>;
     getProductsByCategory(category: string): Promise<Array<Product>>;
+    getReferralBonusHistory(): Promise<Array<ReferralBonus>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWalletBalance(): Promise<bigint>;
     isCallerAdmin(): Promise<boolean>;
@@ -171,6 +202,7 @@ export interface backendInterface {
     placeOrder(productId: bigint, quantity: bigint): Promise<Order>;
     processPayoutRequest(requestId: bigint, approved: boolean): Promise<void>;
     registerWithReferral(profile: UserProfile, referrerCode: string): Promise<void>;
+    removeIdProduct(productId: bigint): Promise<void>;
     requestPayout(amount: bigint): Promise<PayoutRequest>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateProduct(productId: bigint, name: string, desc: string, price: bigint, category: string): Promise<Product>;
@@ -218,6 +250,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createProduct(arg0, arg1, arg2, arg3);
+            return result;
+        }
+    }
+    async designateIdProduct(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.designateIdProduct(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.designateIdProduct(arg0);
             return result;
         }
     }
@@ -329,6 +375,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getFixedReferralBonusSummary(): Promise<FixedReferralBonusSummary> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getFixedReferralBonusSummary();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getFixedReferralBonusSummary();
+            return result;
+        }
+    }
+    async getIdProducts(): Promise<Array<bigint>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getIdProducts();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getIdProducts();
+            return result;
+        }
+    }
     async getMyPayoutRequests(): Promise<Array<PayoutRequest>> {
         if (this.processError) {
             try {
@@ -382,6 +456,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getProductsByCategory(arg0);
+            return result;
+        }
+    }
+    async getReferralBonusHistory(): Promise<Array<ReferralBonus>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getReferralBonusHistory();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getReferralBonusHistory();
             return result;
         }
     }
@@ -480,6 +568,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.registerWithReferral(to_candid_UserProfile_n13(this._uploadFile, this._downloadFile, arg0), arg1);
+            return result;
+        }
+    }
+    async removeIdProduct(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.removeIdProduct(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.removeIdProduct(arg0);
             return result;
         }
     }

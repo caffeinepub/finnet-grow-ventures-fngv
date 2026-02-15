@@ -1,22 +1,73 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-14T22:25:38.609Z",
+  "generatedAt": "2026-02-15T03:24:42.631Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 0,
-    "implemented": 0,
-    "items": []
+    "total": 4,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-11",
+        "summary": "Replace the existing referral commission calculation with a fixed-amount 7-level referral bonus that is paid out only when a referred associate buys a \"new associate id number\" (i.e., an order for a designated Associate-ID product). The fixed bonuses must be: Level 1 = Rs.100.00, Level 2 = Rs.50.00, Level 3 = Rs.25.00, Level 4 = Rs.10.00, Level 5 = Rs.10.00, Level 6 = Rs.5.00, Level 7 = Rs.5.00.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-12",
+        "summary": "Track the 7-level referral bonus payouts separately from the existing commission/earnings ledger, including separate storage, separate history list, and separate summary totals retrievable by the frontend.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-13",
+        "summary": "Add backend support to designate which catalog product(s) represent purchasing a \"new associate id number\" so that only those orders trigger the 7-level referral bonus.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/admin/AdminCatalogPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/admin/AdminCatalogPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-14",
+        "summary": "Update the frontend earnings UI to display the new 7-level referral bonus summary and bonus history separately from the existing commission history, using English user-facing text.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/EarningsPage.tsx",
+          "frontend/src/pages/DashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/EarningsPage.tsx",
+          "frontend/src/pages/DashboardPage.tsx"
+        ]
+      }
+    ]
   },
   "changedFiles": [
     "backend/main.mo",
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
+    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/EarningsPage.tsx",
+    "frontend/src/pages/admin/AdminCatalogPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

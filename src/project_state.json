@@ -1,11 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 7,
   "summary": "Build an MLM (network marketing) app for FINNET GROW VENTURES (FNGV) to sell services/products with an associate-based referral program and payouts for referrals.",
   "architectural_notes": [
-    "App is an MLM (network marketing) platform for FINNET GROW VENTURES (FNGV) centered on associates, referrals, and payouts."
+    "App is an MLM (network marketing) platform for FINNET GROW VENTURES (FNGV) centered on associates, referrals, and payouts.",
+    "Referral commissions will be replaced by a fixed-amount 7-level bonus: L1 Rs.100, L2 Rs.50, L3 Rs.25, L4 Rs.10, L5 Rs.10, L6 Rs.5, L7 Rs.5; trigger on purchase of a new associate ID number; track separately from the main commission/earnings ledger."
   ],
-  "known_issues": [],
+  "known_issues": [
+    "Production deployment hit domain validation error: domain 'finnet-grow-ventures-(fngv)' rejected because it contains invalid characters (parentheses)."
+  ],
   "isFixRequest": false,
   "existing_features": [
     {
@@ -87,6 +90,22 @@
         "REQ-10"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-backend-support-to-designate-which-catalog-product-s-represent-purchasing-a-new-associate-id-number-so-that-only-those-orders-trigger-the-7-level-referral-bonus",
+      "title": "Add backend support to designate which catalog product(s) represent purchasing a \"new associate id number\" so that only those orders trigger the 7-level referral bonus.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-earnings-ui-to-display-the-new-7-level-referral-bonus-summary-and-bonus-history-separately-from-the-existing-commission-history-using-english-user-facing-text",
+      "title": "Update the frontend earnings UI to display the new 7-level referral bonus summary and bonus history separately from the existing commission history, using English user-facing text.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -118,6 +137,28 @@
       "id": "AR-5",
       "summary": "Add a simple associate dashboard to track referrals and earnings at a glance",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Replace existing referral commission with a fixed-amount 7-level referral bonus triggered when a referred associate purchases a new associate ID number; track these payouts separately from the main commission ledger",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Replace the existing referral commission calculation with a fixed-amount 7-level referral bonus that is paid out only when a referred associate buys a \"new associate id number\" (i.e., an order for a designated Associate-ID product). The fixed bonuses must be: Level 1 = Rs.100.00, Level 2 = Rs.50.00, Level 3 = Rs.25.00, Level 4 = Rs.10.00, Level 5 = Rs.10.00, Level 6 = Rs.5.00, Level 7 = Rs.5.00.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Track the 7-level referral bonus payouts separately from the existing commission/earnings ledger, including separate storage, separate history list, and separate summary totals retrievable by the frontend.",
+      "reqIds": [
+        "REQ-12"
+      ],
       "status": "pending"
     }
   ],

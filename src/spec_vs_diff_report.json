@@ -1,49 +1,60 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-14T22:25:38.607Z",
-  "summary": "BuildRequest contains no explicit requirements or acceptance criteria. The diff modifies backend/main.mo with substantial new/expanded backend data models and API logic (profiles/referrals/etc.) and updates project_state.json metadata, which appear to add/extend functionality beyond a “clarify requested features” task.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-15T03:24:42.629Z",
+  "summary": "Diff adds new frontend UI and hooks for a “Referral Bonus” feature (separate from commissions) and introduces backend data types/storage maps for referral bonuses and Associate-ID product designation. However, based on the visible backend diff, key acceptance-criteria details for REQ-11/REQ-12 are either not shown (due to truncation) or appear mismatched (notably missing triggering order id in bonus events and the required dashboard shape).",
+  "missing_requirements": [
     {
-      "description": "Implemented/expanded backend data models and persistent storage for user profiles, products, orders, commissions, payout requests, wallets, referrals, and referral codes, plus new ID counters.",
-      "reason": "No requirements were specified in the BuildRequest; these are functional changes not requested.",
+      "id": "REQ-11",
+      "requirement": "Replace existing referral commission calculation with fixed-amount 7-level referral bonus triggered only by delivered Associate-ID purchases; old 10%/5% commission must not be created/credited for those orders; deterministic behavior for quantity > 1; stop when referrer chain ends.",
+      "reason": "The backend diff excerpt shows new types (ReferralBonus, idProduct map) but does not show the delivered-order handling logic that (1) disables the old 2-level percentage commission for Associate-ID purchases and (2) walks the referrer chain up to 7 levels applying the exact fixed amounts, including a clear deterministic rule for quantity > 1. Because backend/main.mo is truncated, this implementation cannot be verified from the provided diff summary.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (truncated; no delivered-order bonus/commission logic shown)"
       ]
     },
     {
-      "description": "Added/expanded authorization/permission checks and included authorization mixin/state initialization.",
-      "reason": "No requirements were specified; BuildRequest focused on clarification and explicitly had no requirements.",
+      "id": "REQ-12",
+      "requirement": "Track 7-level referral bonus payouts separately and expose a new backend query returning a referral-bonus dashboard object containing at least totalBonusEarned and bonusHistory; bonus events must include event id, recipient principal, triggering order id, level, amount, timestamp; do not mix bonuses into getEarningsDashboard commissionHistory.",
+      "reason": "The backend introduces a ReferralBonus type and referralBonuses storage, but the ReferralBonus type shown does not include a triggering order id field (it has `referralBy` instead). Also, the shown summary type is `FixedReferralBonusSummary` with fields like `totalBonuses`/`totalAmount` rather than the explicitly required `totalBonusEarned` and `bonusHistory` dashboard object. No backend query methods are visible in the truncated excerpt to confirm the required dashboard response or separation from getEarningsDashboard.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (ReferralBonus type lacks orderId; dashboard query not shown)",
+        "backend/main.mo (FixedReferralBonusSummary fields differ from required dashboard fields)"
       ]
     },
     {
-      "description": "Added/expanded user profile management endpoints (e.g., getCallerUserProfile, getUserProfile, saveCallerUserProfile) including referral code uniqueness validation.",
-      "reason": "No requirements were specified; these are new/changed backend behaviors.",
+      "id": "REQ-13",
+      "requirement": "Backend support for designating catalog products as Associate-ID purchase triggers (admin create/update can set/see designation) and ensure only those delivered orders trigger 7-level bonus; frontend Admin Catalog must allow setting/seeing designation.",
+      "reason": "Frontend Admin Catalog page imports and uses hooks suggesting ID-product designation controls, and backend adds an `idProduct` map, but the backend diff excerpt does not show any admin endpoints to create/update the designation (nor a product flag stored on the Product type). Because backend/main.mo is truncated, it cannot be verified that the designation is persisted and enforced during order delivery as required.",
       "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Added/expanded referral registration flow entrypoint (registerWithReferral) allowing guest/anonymous registration (commented as such).",
-      "reason": "No requirements were specified; this changes/adds backend behavior.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Updated project metadata/state (projectStateVersion and existing_features listing referencing REQ-1..REQ-7, etc.).",
-      "reason": "BuildRequest had no requirements and did not ask to update project tracking metadata.",
-      "evidence": [
-        "project_state.json"
+        "backend/main.mo (Product type has no Associate-ID flag; only `idProduct = Map.empty<Nat, ()>()` shown)",
+        "frontend/src/pages/admin/AdminCatalogPage.tsx (uses useGetIdProducts/useDesignateIdProduct/useRemoveIdProduct hooks)"
       ]
     }
   ],
-  "confidence": 0.68,
+  "hallucinated_features": [
+    {
+      "description": "Introduced a detailed `FixedReferralBonusSummary` structure with per-level counts and per-level totals (level1Count..level7Count, totalLevelXAmount, etc.).",
+      "reason": "REQ-12 only requires a dashboard with at least totalBonusEarned and bonusHistory (plus whatever else the UI needs). The per-level count/amount breakdown is additional beyond the minimum specified.",
+      "evidence": [
+        "backend/main.mo (type FixedReferralBonusSummary with extensive per-level fields)"
+      ]
+    },
+    {
+      "description": "ReferralBonus event schema includes a `referralBy` principal field instead of (or in addition to) the required triggering `orderId`.",
+      "reason": "REQ-12 minimum event fields include triggering order id; `referralBy` is not requested and may indicate a schema divergence that could prevent meeting UI requirements.",
+      "evidence": [
+        "backend/main.mo (type ReferralBonus { referralBy : Principal; ... } )"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/EarningsPage.tsx",
+    "frontend/src/pages/admin/AdminCatalogPage.tsx",
     "project_state.json"
   ]
 }

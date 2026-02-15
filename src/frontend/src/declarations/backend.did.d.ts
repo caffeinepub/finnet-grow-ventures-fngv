@@ -18,6 +18,25 @@ export interface Commission {
   'amount' : bigint,
   'associate' : Principal,
 }
+export interface FixedReferralBonusSummary {
+  'level6Count' : bigint,
+  'level1Count' : bigint,
+  'totalLevel3Amount' : bigint,
+  'level4Count' : bigint,
+  'totalLevel4Amount' : bigint,
+  'lastUpdated' : Time,
+  'totalLevel5Amount' : bigint,
+  'level7Count' : bigint,
+  'level2Count' : bigint,
+  'totalLevel6Amount' : bigint,
+  'totalBonuses' : bigint,
+  'totalAmount' : bigint,
+  'level5Count' : bigint,
+  'totalLevel7Amount' : bigint,
+  'totalLevel1Amount' : bigint,
+  'level3Count' : bigint,
+  'totalLevel2Amount' : bigint,
+}
 export interface Order {
   'id' : bigint,
   'status' : string,
@@ -45,6 +64,14 @@ export interface Product {
   'category' : string,
   'price' : bigint,
 }
+export interface ReferralBonus {
+  'id' : bigint,
+  'level' : bigint,
+  'referralBy' : Principal,
+  'timestamp' : Time,
+  'amount' : bigint,
+  'associate' : Principal,
+}
 export type Time = bigint;
 export interface UserProfile {
   'status' : string,
@@ -62,6 +89,7 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createProduct' : ActorMethod<[string, string, bigint, string], Product>,
+  'designateIdProduct' : ActorMethod<[bigint], undefined>,
   'getAllPayoutRequests' : ActorMethod<[], Array<PayoutRequest>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -85,10 +113,13 @@ export interface _SERVICE {
       'totalWithdrawn' : bigint,
     }
   >,
+  'getFixedReferralBonusSummary' : ActorMethod<[], FixedReferralBonusSummary>,
+  'getIdProducts' : ActorMethod<[], Array<bigint>>,
   'getMyPayoutRequests' : ActorMethod<[], Array<PayoutRequest>>,
   'getOrderHistory' : ActorMethod<[Principal], Array<Order>>,
   'getProduct' : ActorMethod<[bigint], Product>,
   'getProductsByCategory' : ActorMethod<[string], Array<Product>>,
+  'getReferralBonusHistory' : ActorMethod<[], Array<ReferralBonus>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getWalletBalance' : ActorMethod<[], bigint>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
@@ -96,6 +127,7 @@ export interface _SERVICE {
   'placeOrder' : ActorMethod<[bigint, bigint], Order>,
   'processPayoutRequest' : ActorMethod<[bigint, boolean], undefined>,
   'registerWithReferral' : ActorMethod<[UserProfile, string], undefined>,
+  'removeIdProduct' : ActorMethod<[bigint], undefined>,
   'requestPayout' : ActorMethod<[bigint], PayoutRequest>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateProduct' : ActorMethod<
