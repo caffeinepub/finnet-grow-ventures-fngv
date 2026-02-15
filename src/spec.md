@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the current referral commission with a fixed 7-level referral bonus that only triggers on delivered “Associate-ID” product orders, and track/display these bonuses separately from existing commissions.
+**Goal:** Replace the onboarding “Referral Code” input with a conditional, validated “Upline Associate ID Number” flow for users joining via referral.
 
 **Planned changes:**
-- Backend: Remove the old percentage-based referral commission creation on order delivery and implement a fixed 7-level referral bonus (Rs.100, 50, 25, 10, 10, 5, 5) that triggers only for delivered orders containing an admin-designated Associate-ID product.
-- Backend: Add separate storage and APIs for referral-bonus totals and history (distinct from the existing commissions/earnings ledger), including event details needed for UI display.
-- Backend + Frontend: Add support for admins to designate catalog products as “Associate-ID purchase” triggers (e.g., a flag) and expose/edit it in the Admin Catalog create/update UI.
-- Frontend: Add a new “Referral Bonus” section to earnings-related UI (including summary and history list) and fetch data via new React Query hooks, while keeping existing commission UI functional and separate.
+- Update the profile setup/onboarding modal to remove “Your Referral Code” and conditionally show/require an input labeled exactly “Upline Associate ID Number” only when a referral context is present (e.g., URL `ref` parameter).
+- Adjust onboarding submit behavior to validate the upline associate ID on the client (required when in referral context) and show clear English success/error messages, including handling backend validation failures.
+- Add a new backend registration entry point that accepts `(profile: UserProfile, uplineAssociateId: Text)`, validates the ID exists in the `associateIds` index, and links the new user to the upline (sets `referredBy` and updates referrals mapping); keep existing `registerWithReferral(profile, referrerCode)` behavior unchanged.
+- Update the frontend React Query layer to call the new backend registration method for referral-based onboarding while preserving the existing `useRegisterWithReferral` hook for other flows.
 
-**User-visible outcome:** Admins can mark products as Associate-ID triggers; associates can see a separate “Referral Bonus” summary and history (with level, amount, date, and triggering order id) that is generated only when a referred associate’s Associate-ID order is delivered, without mixing into existing commissions.
+**User-visible outcome:** Users who open onboarding via a referral link must enter an “Upline Associate ID Number” to complete registration (with clear English validation feedback); users not joining via referral see no referral/upline field and can complete onboarding normally.

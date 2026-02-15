@@ -1,5 +1,11 @@
 export function formatMoney(amount: bigint): string {
-  return `$${(Number(amount) / 100).toFixed(2)}`;
+  const value = Number(amount) / 100;
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 export function formatTime(time: bigint): string {

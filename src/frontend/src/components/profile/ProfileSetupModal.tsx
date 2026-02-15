@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { useSaveCallerUserProfile, useRegisterWithReferral } from '../../hooks/useQueries';
+import { useSaveCallerUserProfile, useRegisterWithUplineId } from '../../hooks/useQueries';
 import { toast } from 'sonner';
 import { getUrlParameter } from '../../utils/urlParams';
 import type { UserProfile } from '../../backend';
@@ -12,20 +12,32 @@ export default function ProfileSetupModal() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [referralCode, setReferralCode] = useState('');
+  const [associateId, setAssociateId] = useState('');
+  const [uplineAssociateId, setUplineAssociateId] = useState('');
 
   const referrerCode = getUrlParameter('ref') || '';
+  const isReferralContext = !!referrerCode;
 
   const saveProfile = useSaveCallerUserProfile();
-  const registerWithReferral = useRegisterWithReferral();
+  const registerWithUplineId = useRegisterWithUplineId();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim() || !phone.trim() || !referralCode.trim()) {
-      toast.error('Please fill in all fields');
+    // Basic validation
+    if (!name.trim() || !email.trim() || !phone.trim() || !associateId.trim()) {
+      toast.error('Please fill in all required fields');
       return;
     }
+
+    // Validate upline associate ID only in referral context
+    if (isReferralContext && !uplineAssociateId.trim()) {
+      toast.error('Upline Associate ID Number is required when joining via referral');
+      return;
+    }
+
+    // Generate a unique referral code for the new user
+    const generatedReferralCode = `REF${Date.now()}${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
     const profile: UserProfile = {
       name: name.trim(),
@@ -33,24 +45,38 @@ export default function ProfileSetupModal() {
       phone: phone.trim(),
       joinDate: BigInt(Date.now()) * BigInt(1_000_000),
       status: 'ACTIVE',
-      referralCode: referralCode.trim(),
+      referralCode: generatedReferralCode,
       referredBy: undefined,
+      referredByAssociateId: undefined,
+      associateId: associateId.trim(),
     };
 
     try {
-      if (referrerCode) {
-        await registerWithReferral.mutateAsync({ profile, referrerCode });
+      if (isReferralContext) {
+        // Register with upline associate ID
+        await registerWithUplineId.mutateAsync({ 
+          profile, 
+          uplineAssociateId: uplineAssociateId.trim() 
+        });
         toast.success('Profile created successfully with referral!');
       } else {
+        // Register without referral
         await saveProfile.mutateAsync(profile);
         toast.success('Profile created successfully!');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create profile');
+      const errorMessage = error.message || 'Failed to create profile';
+      if (errorMessage.includes('Invalid upline associate ID')) {
+        toast.error('The Upline Associate ID Number you entered does not exist. Please check and try again.');
+      } else if (errorMessage.includes('Associate ID already in use')) {
+        toast.error('This Associate ID is already in use. Please choose a different one.');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
-  const isLoading = saveProfile.isPending || registerWithReferral.isPending;
+  const isLoading = saveProfile.isPending || registerWithUplineId.isPending;
 
   return (
     <Dialog open={true}>
@@ -60,7 +86,7 @@ export default function ProfileSetupModal() {
           <DialogDescription>Please complete your profile to get started.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {referrerCode && (
+          {isReferralContext && (
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-sm">
               <p className="text-foreground">
                 You were referred! Your referrer code: <span className="font-semibold">{referrerCode}</span>
@@ -100,16 +126,29 @@ export default function ProfileSetupModal() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="referralCode">Your Referral Code</Label>
+            <Label htmlFor="associateId">Associate ID Number</Label>
             <Input
-              id="referralCode"
-              value={referralCode}
-              onChange={(e) => setReferralCode(e.target.value)}
-              placeholder="Choose a unique code"
+              id="associateId"
+              value={associateId}
+              onChange={(e) => setAssociateId(e.target.value)}
+              placeholder="Enter your Associate ID"
               required
             />
-            <p className="text-xs text-muted-foreground">This code will be used by others to join under you.</p>
+            <p className="text-xs text-muted-foreground">Your unique Associate ID number.</p>
           </div>
+          {isReferralContext && (
+            <div className="space-y-2">
+              <Label htmlFor="uplineAssociateId">Upline Associate ID Number</Label>
+              <Input
+                id="uplineAssociateId"
+                value={uplineAssociateId}
+                onChange={(e) => setUplineAssociateId(e.target.value)}
+                placeholder="Enter your upline's Associate ID"
+                required
+              />
+              <p className="text-xs text-muted-foreground">The Associate ID of the person who referred you.</p>
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Creating Profile...' : 'Complete Setup'}
           </Button>

@@ -77,7 +77,9 @@ export interface UserProfile {
     name: string;
     email: string;
     referredBy?: Principal;
+    referredByAssociateId?: string;
     phone: string;
+    associateId: string;
 }
 export enum UserRole {
     admin = "admin",
@@ -119,6 +121,7 @@ export interface backendInterface {
     placeOrder(productId: bigint, quantity: bigint): Promise<Order>;
     processPayoutRequest(requestId: bigint, approved: boolean): Promise<void>;
     registerWithReferral(profile: UserProfile, referrerCode: string): Promise<void>;
+    registerWithUplineId(profile: UserProfile, uplineAssociateId: string): Promise<void>;
     removeIdProduct(productId: bigint): Promise<void>;
     requestPayout(amount: bigint): Promise<PayoutRequest>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;

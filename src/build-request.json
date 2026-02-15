@@ -1,101 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Replace referral commission with fixed 7-level referral bonus (separate tracking)",
+  "title": "Replace onboarding referral-code input with Upline Associate ID Number (conditional + validated)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-11",
-      "text": "Replace the existing referral commission calculation with a fixed-amount 7-level referral bonus that is paid out only when a referred associate buys a \"new associate id number\" (i.e., an order for a designated Associate-ID product). The fixed bonuses must be: Level 1 = Rs.100.00, Level 2 = Rs.50.00, Level 3 = Rs.25.00, Level 4 = Rs.10.00, Level 5 = Rs.10.00, Level 6 = Rs.5.00, Level 7 = Rs.5.00.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "1st level referral bonus - Rs.100.00 , 2nd level referral bonus - Rs.50/- , 3rd level referral bonus - Rs.25.00, 4th level referral bonus - Rs.10.00, 5th level referral bonus - Rs.10.00, 6th level referral bonus - Rs.5.00, 7th level referral bonus - Rs.5.00.  the bonus Should trigger only when a referred associate when they buy a new associate id number.",
-          "7‑level bonus to replace the current referral commission entirely"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When an admin marks an order as DELIVERED, no percentage-based commissions (the old 2-level 10%/5% logic) are created or credited for that order.",
-        "If the delivered order is for a product designated as an Associate-ID purchase, the system walks up the referrer chain up to 7 levels (based on the existing referrals graph) and creates a fixed bonus payout for each eligible upline associate using the exact amounts provided by the user.",
-        "If there is no referrer at some level (chain ends before level 7), bonuses stop at that level and no further bonuses are created.",
-        "If the Associate-ID purchase quantity is greater than 1, bonus calculation behavior is deterministic and documented/consistent (e.g., applies per order, not per unit) and covered by tests or clear logic comments.",
-        "The old Commission ledger is no longer used for referral payouts for Associate-ID purchases."
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "text": "Track the 7-level referral bonus payouts separately from the existing commission/earnings ledger, including separate storage, separate history list, and separate summary totals retrievable by the frontend.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "the payouts Should be tracked separately."
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new backend query returns a referral-bonus dashboard object containing at least: totalBonusEarned and bonusHistory (and any additional totals needed by the UI).",
-        "Bonus events include enough fields for UI display (at minimum: event id, recipient associate principal, triggering order id, level, amount, timestamp).",
-        "Existing getEarningsDashboard continues to function for the existing earnings/commission module, but it does not include the new 7-level bonus events in commissionHistory.",
-        "No payout request logic is broken by the addition of separate tracking (existing payout requests continue to function against the existing wallet/balance unless explicitly extended in a separate requirement)."
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "text": "Add backend support to designate which catalog product(s) represent purchasing a \"new associate id number\" so that only those orders trigger the 7-level referral bonus.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "the bonus Should trigger only when a referred associate when they buy a new associate id number."
-        ]
-      },
-      "acceptanceCriteria": [
-        "An admin can create/update a catalog item such that it is clearly designated as an Associate-ID purchase trigger (e.g., a boolean flag or a well-defined category value stored on the product).",
-        "When a non-designated product is delivered, no 7-level bonus payouts are created.",
-        "When a designated Associate-ID product is delivered, the 7-level bonus payouts are created according to REQ-11.",
-        "The frontend Admin Catalog screen allows admins to set/see this designation when creating/updating products."
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "text": "Update the frontend earnings UI to display the new 7-level referral bonus summary and bonus history separately from the existing commission history, using English user-facing text.",
+      "id": "REQ-23",
+      "text": "Update the profile setup/onboarding modal (frontend/src/components/profile/ProfileSetupModal.tsx) to completely remove the input labeled \"Your Referral Code\" and replace it with an input labeled \"Upline Associate ID Number\" that is only shown and required when the user is joining via referral (i.e., when a referral indicator is present from the URL, such as the existing \"ref\" parameter).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-5"
         ],
         "quotes": [
-          "the payouts Should be tracked separately.",
-          "7‑level bonus to replace the current referral commission entirely"
+          "remove \"your referral code\" and add upline associate id number.",
+          "upline id number only required when joining via referral."
         ]
       },
       "acceptanceCriteria": [
-        "The app fetches the new referral-bonus dashboard from the backend via React Query (add new hooks alongside existing earnings hooks).",
-        "Earnings-related pages (at minimum Earnings page and Dashboard earnings summary card) show a clearly labeled section for \"Referral Bonus\" (or equivalent) separate from \"Commissions\".",
-        "A user can view a table/list of referral-bonus events showing level, amount, date, and the triggering order id.",
-        "Existing commission UI continues to work (even if it becomes empty going forward), and the new bonus UI does not break route protection or loading states."
+        "When the onboarding modal is opened without a referral context, there is no field labeled \"Your Referral Code\" and there is no \"Upline Associate ID Number\" field shown/required.",
+        "When the onboarding modal is opened with a referral context (existing URL \"ref\" parameter), the modal shows an input labeled exactly \"Upline Associate ID Number\" and the form cannot be submitted unless it is non-empty.",
+        "All user-facing text added/changed by this requirement is in English."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Change onboarding submission behavior so that when joining via referral it submits the upline associate ID number and handles validation errors by showing a clear English error toast/message; when not joining via referral, onboarding should not require or submit any upline associate ID number.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "the system validate that the entered Upline Associate ID Number matches an existing associate ID in the system if they joining via referral."
+        ]
+      },
+      "acceptanceCriteria": [
+        "If the user attempts to submit in referral context with an empty upline associate ID number, the UI shows an English validation error and no backend mutation is executed.",
+        "If the backend rejects the upline associate ID number as invalid/non-existent, the UI shows an English error message and the profile is not created.",
+        "If the upline associate ID number is valid, the profile is created successfully and the UI shows an English success message."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Add backend support to register a new associate using an upline associate ID number (Text) during referral-based onboarding: validate that the provided upline associate ID exists in the existing associateIds index (backend/main.mo), and when valid, link the new user’s referrer/upline accordingly (set referredBy and create the referrals mapping so downline/direct referrals work). Keep existing referral-code-based registration behavior intact for any existing flows that still use it.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "the system validate that the entered Upline Associate ID Number matches an existing associate ID in the system if they joining via referral."
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a backend entry point that takes (profile: UserProfile, uplineAssociateId: Text) for referral-based registration and traps with an English error when uplineAssociateId is not found in associateIds.",
+        "When uplineAssociateId is valid, the created profile has referredBy set to the upline principal and the referrals map is updated so that the upline sees the new user in getDirectReferrals().",
+        "Existing backend method registerWithReferral(profile, referrerCode) continues to function as before (no breaking changes to its signature/behavior)."
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "text": "Update the frontend React Query layer (frontend/src/hooks/useQueries.ts) to call the new backend registration method for referral-based onboarding using the upline associate ID number, while preserving the existing useRegisterWithReferral hook for any other screens/flows that still rely on it.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "replace Upline associate id number. upline id number only required when joining via referral."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new mutation hook (or an update to onboarding wiring) exists that calls the new backend method with { profile, uplineAssociateId } when in referral context.",
+        "On successful registration via upline associate ID, the ['currentUserProfile'] query is invalidated/refetched (same as existing behavior).",
+        "No changes are made to the immutable hook files listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts)."
       ]
     }
   ],
   "constraints": [
+    "Do not edit files under frontend/src/components/ui (read-only UI component sources).",
+    "Do not edit any frontend paths listed as immutable in SYSTEM_CONTEXT.",
     "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/immutablePaths (compose existing UI components instead).",
-    "Use English for any user-facing text.",
-    "The new 7-level referral bonus must replace the current referral commission entirely for the specified trigger (Associate-ID purchase).",
-    "The 7-level referral bonus payouts must be tracked separately from the existing commission ledger."
+    "Use English for any user-facing text introduced or modified by this change."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding real-time updates (no WebSockets).",
-    "Changing the domain/deployment naming validation behavior.",
-    "Adding external databases or off-chain storage.",
-    "Changing payout requests to withdraw from the new referral-bonus balances unless explicitly requested later."
+    "Removing the referral program feature from the app (referral links/codes can continue to exist elsewhere, e.g., the Referrals page).",
+    "Redesigning the Referrals page, Network page, earnings logic, or commission/bonus calculations beyond what is necessary to support upline-associate-id-based onboarding.",
+    "Changing the UserProfile schema fields beyond what is necessary for the new registration flow."
   ],
   "imageRequirements": {
     "required": [],

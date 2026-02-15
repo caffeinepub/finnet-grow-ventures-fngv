@@ -80,7 +80,9 @@ export interface UserProfile {
   'name' : string,
   'email' : string,
   'referredBy' : [] | [Principal],
+  'referredByAssociateId' : [] | [string],
   'phone' : string,
+  'associateId' : string,
 }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -127,6 +129,7 @@ export interface _SERVICE {
   'placeOrder' : ActorMethod<[bigint, bigint], Order>,
   'processPayoutRequest' : ActorMethod<[bigint, boolean], undefined>,
   'registerWithReferral' : ActorMethod<[UserProfile, string], undefined>,
+  'registerWithUplineId' : ActorMethod<[UserProfile, string], undefined>,
   'removeIdProduct' : ActorMethod<[bigint], undefined>,
   'requestPayout' : ActorMethod<[bigint], PayoutRequest>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,

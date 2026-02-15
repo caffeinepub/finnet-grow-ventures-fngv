@@ -25,7 +25,7 @@ function RootLayout() {
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
   
   const isAuthenticated = !!identity;
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && (userProfile === null || (userProfile && !userProfile.associateId?.trim()));
 
   if (isInitializing) {
     return (

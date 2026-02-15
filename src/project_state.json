@@ -1,13 +1,17 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
+  "projectStateVersion": 13,
   "summary": "Build an MLM (network marketing) app for FINNET GROW VENTURES (FNGV) to sell services/products with an associate-based referral program and payouts for referrals.",
   "architectural_notes": [
     "App is an MLM (network marketing) platform for FINNET GROW VENTURES (FNGV) centered on associates, referrals, and payouts.",
-    "Referral commissions will be replaced by a fixed-amount 7-level bonus: L1 Rs.100, L2 Rs.50, L3 Rs.25, L4 Rs.10, L5 Rs.10, L6 Rs.5, L7 Rs.5; trigger on purchase of a new associate ID number; track separately from the main commission/earnings ledger."
+    "Referral commissions will be replaced by a fixed-amount 7-level bonus: L1 Rs.100, L2 Rs.50, L3 Rs.25, L4 Rs.10, L5 Rs.10, L6 Rs.5, L7 Rs.5; trigger on purchase of a new associate ID number; track separately from the main commission/earnings ledger.",
+    "Standardize currency display across the app: show all earnings-related amounts formatted in Indian Rupees (₹) consistently (commissions + 7-level bonus).",
+    "New associate onboarding/signup must collect an Associate ID number via a required manual-entry field (not auto-generated).",
+    "Onboarding change: replace \"Your referral code\" with \"Upline Associate ID Number\"; require only when joining via referral; validate against existing associates and use it to link the upline/referrer relationship."
   ],
   "known_issues": [
-    "Production deployment hit domain validation error: domain 'finnet-grow-ventures-(fngv)' rejected because it contains invalid characters (parentheses)."
+    "Production deployment hit domain validation error: domain 'finnet-grow-ventures-(fngv)' rejected because it contains invalid characters (parentheses).",
+    "Build/regeneration attempt failed with: \"Sorry, the AI was unable to implement your request.\" (needs retry)."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -106,6 +110,78 @@
         "REQ-14"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-shared-money-formatter-so-all-monetary-amounts-are-formatted-as-indian-rupees-using-an-english-india-locale-while-preserving-the-existing-assumption-that-stored-amounts-are-integer-minor-units-amount-100",
+      "title": "Update the shared money formatter so all monetary amounts are formatted as Indian Rupees (₹) using an English (India) locale, while preserving the existing assumption that stored amounts are integer minor units (amount/100).",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-or-update-any-hardcoded-dollar-symbols-and-usd-specific-labels-in-user-facing-text-related-to-earnings-payouts-so-they-match-inr-formatting-everywhere-for-example-the-payout-withdrawal-input-label-and-maximum-hint-on-the-payouts-page",
+      "title": "Remove or update any hardcoded dollar symbols and USD-specific labels in user-facing text related to earnings/payouts so they match INR (₹) formatting everywhere (for example the payout withdrawal input label and maximum hint on the Payouts page).",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-associate-user-profile-data-model-to-store-an-associate-id-number-and-require-it-to-be-provided-manually-entered-by-the-associate-when-creating-or-updating-the-caller-s-profile",
+      "title": "Extend the Associate user profile data model to store an Associate ID number, and require it to be provided (manually entered by the associate) when creating or updating the caller’s profile.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-profile-setup-onboarding-modal-to-include-a-required-associate-id-number-input-field-that-is-manually-entered-and-submit-it-as-part-of-profile-creation-with-or-without-referral",
+      "title": "Update the profile setup (onboarding) modal to include a required \"Associate ID Number\" input field that is manually entered, and submit it as part of profile creation (with or without referral).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-treat-an-authenticated-user-as-not-fully-set-up-if-their-profile-is-missing-an-associate-id-number-and-require-them-to-complete-setup-before-using-the-app-same-enforcement-behavior-as-when-the-profile-is-null",
+      "title": "Treat an authenticated user as \"not fully set up\" if their profile is missing an Associate ID number, and require them to complete setup before using the app (same enforcement behavior as when the profile is null).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-the-associate-id-number-on-the-profile-page-and-support-setting-updating-it-from-the-profile-edit-form-so-existing-users-can-complete-setup-after-upgrade",
+      "title": "Display the Associate ID number on the Profile page and support setting/updating it from the Profile edit form so existing users can complete setup after upgrade.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-profile-setup-onboarding-modal-frontend-src-components-profile-profilesetupmodal-tsx-to-completely-remove-the-input-labeled-your-referral-code-and-replace-it-with-an-input-labeled-upline-associate-id-number-that-is-only-shown-and-required-when-the-user-is-joining-via-referral-i-e-when-a-referral-indicator-is-present-from-the-url-such-as-the-existing-ref-parameter",
+      "title": "Update the profile setup/onboarding modal (frontend/src/components/profile/ProfileSetupModal.tsx) to completely remove the input labeled \"Your Referral Code\" and replace it with an input labeled \"Upline Associate ID Number\" that is only shown and required when the user is joining via referral (i.e., when a referral indicator is present from the URL, such as the existing \"ref\" parameter).",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-change-onboarding-submission-behavior-so-that-when-joining-via-referral-it-submits-the-upline-associate-id-number-and-handles-validation-errors-by-showing-a-clear-english-error-toast-message-when-not-joining-via-referral-onboarding-should-not-require-or-submit-any-upline-associate-id-number",
+      "title": "Change onboarding submission behavior so that when joining via referral it submits the upline associate ID number and handles validation errors by showing a clear English error toast/message; when not joining via referral, onboarding should not require or submit any upline associate ID number.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-react-query-layer-frontend-src-hooks-usequeries-ts-to-call-the-new-backend-registration-method-for-referral-based-onboarding-using-the-upline-associate-id-number-while-preserving-the-existing-useregisterwithreferral-hook-for-any-other-screens-flows-that-still-rely-on-it",
+      "title": "Update the frontend React Query layer (frontend/src/hooks/useQueries.ts) to call the new backend registration method for referral-based onboarding using the upline associate ID number, while preserving the existing useRegisterWithReferral hook for any other screens/flows that still rely on it.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -158,6 +234,48 @@
       "summary": "Track the 7-level referral bonus payouts separately from the existing commission/earnings ledger, including separate storage, separate history list, and separate summary totals retrievable by the frontend.",
       "reqIds": [
         "REQ-12"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Display all earnings amounts across the app in Indian Rupees (₹) formatting everywhere, including commissions and 7-level referral bonus histories/summaries",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add a mandatory, manually-entered Associate ID number field to the new-associate onboarding/signup form (required to complete setup).",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Enforce uniqueness of Associate ID numbers across all associates.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add a conditional Motoko state migration to handle the UserProfile schema change for existing persisted profiles (so the canister can upgrade without losing data).",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Update onboarding: remove \"Your referral code\" field; replace with \"Upline Associate ID Number\" that is required only when joining via referral and validated against existing Associate ID numbers (link referrer/upline accordingly).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add backend support to register a new associate using an upline associate ID number (Text) during referral-based onboarding: validate that the provided upline associate ID exists in the existing associateIds index (backend/main.mo), and when valid, link the new user’s referrer/upline accordingly (set referredBy and create the referrals mapping so downline/direct referrals work). Keep existing referral-code-based registration behavior intact for any existing flows that still use it.",
+      "reqIds": [
+        "REQ-25"
       ],
       "status": "pending"
     }

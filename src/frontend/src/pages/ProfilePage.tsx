@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [associateId, setAssociateId] = useState('');
 
   if (!identity) {
     navigate({ to: '/signin' });
@@ -39,6 +40,7 @@ export default function ProfilePage() {
     setName(profile.name);
     setEmail(profile.email);
     setPhone(profile.phone);
+    setAssociateId(profile.associateId);
     setIsEditing(true);
   };
 
@@ -47,7 +49,7 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!name.trim() || !email.trim() || !phone.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim() || !associateId.trim()) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -58,6 +60,7 @@ export default function ProfilePage() {
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
+        associateId: associateId.trim(),
       });
       toast.success('Profile updated successfully');
       setIsEditing(false);
@@ -102,6 +105,10 @@ export default function ProfilePage() {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="associateId">Associate ID Number</Label>
+                <Input id="associateId" value={associateId} onChange={(e) => setAssociateId(e.target.value)} />
+              </div>
               <div className="flex gap-2">
                 <Button onClick={handleSave} disabled={saveProfile.isPending}>
                   {saveProfile.isPending ? 'Saving...' : 'Save Changes'}
@@ -131,10 +138,14 @@ export default function ProfilePage() {
                   <p className="font-medium">{profile.phone}</p>
                 </div>
                 <div>
+                  <p className="text-sm text-muted-foreground">Associate ID</p>
+                  <p className="font-medium font-mono">{profile.associateId || 'Not set'}</p>
+                </div>
+                <div>
                   <p className="text-sm text-muted-foreground">Join Date</p>
                   <p className="font-medium">{formatDate(profile.joinDate)}</p>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <p className="text-sm text-muted-foreground">Referral Code</p>
                   <p className="font-medium font-mono">{profile.referralCode}</p>
                 </div>

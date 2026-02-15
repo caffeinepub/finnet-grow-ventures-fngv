@@ -39,7 +39,9 @@ export const UserProfile = IDL.Record({
   'name' : IDL.Text,
   'email' : IDL.Text,
   'referredBy' : IDL.Opt(IDL.Principal),
+  'referredByAssociateId' : IDL.Opt(IDL.Text),
   'phone' : IDL.Text,
+  'associateId' : IDL.Text,
 });
 export const Commission = IDL.Record({
   'id' : IDL.Nat,
@@ -146,6 +148,7 @@ export const idlService = IDL.Service({
   'placeOrder' : IDL.Func([IDL.Nat, IDL.Nat], [Order], []),
   'processPayoutRequest' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
   'registerWithReferral' : IDL.Func([UserProfile, IDL.Text], [], []),
+  'registerWithUplineId' : IDL.Func([UserProfile, IDL.Text], [], []),
   'removeIdProduct' : IDL.Func([IDL.Nat], [], []),
   'requestPayout' : IDL.Func([IDL.Nat], [PayoutRequest], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
@@ -191,7 +194,9 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'email' : IDL.Text,
     'referredBy' : IDL.Opt(IDL.Principal),
+    'referredByAssociateId' : IDL.Opt(IDL.Text),
     'phone' : IDL.Text,
+    'associateId' : IDL.Text,
   });
   const Commission = IDL.Record({
     'id' : IDL.Nat,
@@ -306,6 +311,7 @@ export const idlFactory = ({ IDL }) => {
     'placeOrder' : IDL.Func([IDL.Nat, IDL.Nat], [Order], []),
     'processPayoutRequest' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
     'registerWithReferral' : IDL.Func([UserProfile, IDL.Text], [], []),
+    'registerWithUplineId' : IDL.Func([UserProfile, IDL.Text], [], []),
     'removeIdProduct' : IDL.Func([IDL.Nat], [], []),
     'requestPayout' : IDL.Func([IDL.Nat], [PayoutRequest], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),

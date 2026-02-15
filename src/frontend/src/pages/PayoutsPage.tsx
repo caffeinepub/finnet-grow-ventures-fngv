@@ -31,7 +31,7 @@ export default function PayoutsPage() {
   }
 
   const availableBalance = earnings?.balance || BigInt(0);
-  const availableBalanceInDollars = Number(availableBalance) / 100;
+  const availableBalanceValue = Number(availableBalance) / 100;
 
   const handleRequestPayout = async () => {
     const amountNum = parseFloat(amount);
@@ -85,18 +85,18 @@ export default function PayoutsPage() {
             <div className="text-4xl font-bold text-primary mb-6">{formatMoney(availableBalance)}</div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">Withdrawal Amount ($)</Label>
+                <Label htmlFor="amount">Withdrawal Amount</Label>
                 <Input
                   id="amount"
                   type="number"
                   step="0.01"
                   min="0"
-                  max={availableBalanceInDollars}
+                  max={availableBalanceValue}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
                 />
-                <p className="text-xs text-muted-foreground">Maximum: ${availableBalanceInDollars.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Maximum: {formatMoney(availableBalance)}</p>
               </div>
               <Button onClick={handleRequestPayout} disabled={requestPayout.isPending || availableBalance === BigInt(0)} className="w-full">
                 {requestPayout.isPending ? 'Requesting...' : 'Request Payout'}

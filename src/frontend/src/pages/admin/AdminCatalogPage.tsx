@@ -163,7 +163,7 @@ export default function AdminCatalogPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="price">Price ($)</Label>
+                <Label htmlFor="price">Price</Label>
                 <Input id="price" type="number" step="0.01" min="0" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0.00" />
               </div>
               <div className="space-y-2">

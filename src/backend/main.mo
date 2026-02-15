@@ -7,9 +7,13 @@ import Text "mo:core/Text";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Validation "migration/Validation";
+import Migration "migration";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -23,6 +27,8 @@ actor {
     status : Text; // "ACTIVE", "INACTIVE", "SUSPENDED"
     referralCode : Text;
     referredBy : ?Principal;
+    referredByAssociateId : ?Text;
+    associateId : Text;
   };
 
   type Product = {
@@ -117,6 +123,7 @@ actor {
   let referralCodes = Map.empty<Text, Principal>(); // code -> principal
   let referralBonuses = Map.empty<Nat, ReferralBonus>();
   let idProduct = Map.empty<Nat, ()>();
+  let associateIds = Map.empty<Text, Principal>(); // associateId -> principal
 
   // Counters
   var nextProductId = 1 : Nat;
@@ -146,6 +153,10 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
 
+    if (Validation.isEmpty(profile.associateId)) {
+      Runtime.trap("Associate ID is required");
+    };
+
     // Validate referral code uniqueness
     switch (referralCodes.get(profile.referralCode)) {
       case (?existingOwner) {
@@ -155,6 +166,18 @@ actor {
       };
       case (null) {
         referralCodes.add(profile.referralCode, caller);
+      };
+    };
+
+    // Check for unique associateId using the index map
+    switch (associateIds.get(profile.associateId)) {
+      case (?existingOwner) {
+        if (existingOwner != caller) {
+          Runtime.trap("Associate ID already in use");
+        };
+      };
+      case (null) {
+        associateIds.add(profile.associateId, caller);
       };
     };
 
@@ -173,6 +196,10 @@ actor {
       case (null) {};
     };
 
+    if (Validation.isEmpty(profile.associateId)) {
+      Runtime.trap("Associate ID is required");
+    };
+
     // Find referrer
     let referrer = switch (referralCodes.get(referrerCode)) {
       case (null) { Runtime.trap("Invalid referral code") };
@@ -187,6 +214,14 @@ actor {
       };
     };
 
+    // Check for unique Associate ID using the index map
+    switch (associateIds.get(profile.associateId)) {
+      case (?_) { Runtime.trap("Associate ID already in use") };
+      case (null) {
+        associateIds.add(profile.associateId, caller);
+      };
+    };
+
     // Create profile with referrer
     let newProfile : UserProfile = {
       name = profile.name;
@@ -196,6 +231,70 @@ actor {
       status = "ACTIVE";
       referralCode = profile.referralCode;
       referredBy = ?referrer;
+      referredByAssociateId = null;
+      associateId = profile.associateId;
+    };
+    userProfiles.add(caller, newProfile);
+
+    // Record referral relationship
+    let referralRecord : Referral = {
+      referrer;
+      referee = caller;
+      timestamp = Time.now();
+    };
+    referrals.add(caller, referralRecord);
+  };
+
+  public shared ({ caller }) func registerWithUplineId(profile : UserProfile, uplineAssociateId : Text) : async () {
+    // Allow guests/anonymous users to register - no permission check needed
+    // This is the entry point for new users
+
+    // Check if already registered
+    switch (userProfiles.get(caller)) {
+      case (?_) { Runtime.trap("Already registered") };
+      case (null) {};
+    };
+
+    if (Validation.isEmpty(profile.associateId)) {
+      Runtime.trap("Associate ID is required");
+    };
+
+    // Find upline/referrer by associateId
+    let referrer = switch (associateIds.get(uplineAssociateId)) {
+      case (null) { Runtime.trap("Invalid upline associate ID") };
+      case (?principal) { principal };
+    };
+
+    // Prevent self-referral
+    if (referrer == caller) {
+      Runtime.trap("Cannot refer yourself ");
+    };
+
+    switch (referralCodes.get(profile.referralCode)) {
+      case (null) { referralCodes.add(profile.referralCode, caller) };
+      case (?_) {
+        Runtime.trap("referral code already in use");
+      };
+    };
+
+    switch (associateIds.get(profile.associateId)) {
+      case (null) { associateIds.add(profile.associateId, caller) };
+      case (?_) {
+        Runtime.trap("Associate ID already in use");
+      };
+    };
+
+    // Create profile with referrer
+    let newProfile : UserProfile = {
+      name = profile.name;
+      email = profile.email;
+      phone = profile.phone;
+      joinDate = Time.now();
+      status = "ACTIVE";
+      referralCode = profile.referralCode;
+      referredBy = ?referrer;
+      referredByAssociateId = ?uplineAssociateId;
+      associateId = profile.associateId;
     };
     userProfiles.add(caller, newProfile);
 
@@ -308,9 +407,7 @@ actor {
   };
 
   public query ({ caller }) func getProduct(productId : Nat) : async Product {
-    // Allow anyone including guests to view products for marketing purposes
-    // No authorization check needed
-
+    // Public access - anyone can view products (including guests for catalog browsing)
     switch (products.get(productId)) {
       case (null) { Runtime.trap("Product not found") };
       case (?product) { product };
@@ -318,16 +415,12 @@ actor {
   };
 
   public query ({ caller }) func getAllProducts() : async [Product] {
-    // Allow anyone including guests to view products for marketing purposes
-    // No authorization check needed
-
+    // Public access - anyone can view products (including guests for catalog browsing)
     products.values().toArray();
   };
 
   public query ({ caller }) func getProductsByCategory(category : Text) : async [Product] {
-    // Allow anyone including guests to view products for marketing purposes
-    // No authorization check needed
-
+    // Public access - anyone can view products (including guests for catalog browsing)
     let results = List.empty<Product>();
     for ((_, product) in products.entries()) {
       if (product.category == category) {
@@ -594,7 +687,7 @@ actor {
       if (idx < 7) {
         levelCounts := Array.tabulate(levelCounts.size(), func(i) {
           if (i == idx) { levelCounts[i] + 1 } else {
-            levelCounts[i]; // levelAmounts[idx] += bonus.amount;
+            levelCounts[i];
           };
         });
         levelAmounts := Array.tabulate(levelAmounts.size(), func(i) {

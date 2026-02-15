@@ -159,7 +159,9 @@ export interface UserProfile {
     name: string;
     email: string;
     referredBy?: Principal;
+    referredByAssociateId?: string;
     phone: string;
+    associateId: string;
 }
 export enum UserRole {
     admin = "admin",
@@ -202,6 +204,7 @@ export interface backendInterface {
     placeOrder(productId: bigint, quantity: bigint): Promise<Order>;
     processPayoutRequest(requestId: bigint, approved: boolean): Promise<void>;
     registerWithReferral(profile: UserProfile, referrerCode: string): Promise<void>;
+    registerWithUplineId(profile: UserProfile, uplineAssociateId: string): Promise<void>;
     removeIdProduct(productId: bigint): Promise<void>;
     requestPayout(amount: bigint): Promise<PayoutRequest>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
@@ -313,14 +316,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n12(this._uploadFile, this._downloadFile, result);
         }
     }
     async getDirectReferrals(): Promise<Array<Principal>> {
@@ -560,14 +563,28 @@ export class Backend implements backendInterface {
     async registerWithReferral(arg0: UserProfile, arg1: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.registerWithReferral(to_candid_UserProfile_n13(this._uploadFile, this._downloadFile, arg0), arg1);
+                const result = await this.actor.registerWithReferral(to_candid_UserProfile_n14(this._uploadFile, this._downloadFile, arg0), arg1);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.registerWithReferral(to_candid_UserProfile_n13(this._uploadFile, this._downloadFile, arg0), arg1);
+            const result = await this.actor.registerWithReferral(to_candid_UserProfile_n14(this._uploadFile, this._downloadFile, arg0), arg1);
+            return result;
+        }
+    }
+    async registerWithUplineId(arg0: UserProfile, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.registerWithUplineId(to_candid_UserProfile_n14(this._uploadFile, this._downloadFile, arg0), arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.registerWithUplineId(to_candid_UserProfile_n14(this._uploadFile, this._downloadFile, arg0), arg1);
             return result;
         }
     }
@@ -602,14 +619,14 @@ export class Backend implements backendInterface {
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n13(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n14(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n13(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n14(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -648,8 +665,11 @@ function from_candid_PayoutRequest_n4(_uploadFile: (file: ExternalBlob) => Promi
 function from_candid_UserProfile_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
     return from_candid_record_n10(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n12(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n13(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+    return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
     return value.length === 0 ? null : value[0];
@@ -667,7 +687,9 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
     name: string;
     email: string;
     referredBy: [] | [Principal];
+    referredByAssociateId: [] | [string];
     phone: string;
+    associateId: string;
 }): {
     status: string;
     referralCode: string;
@@ -675,7 +697,9 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
     name: string;
     email: string;
     referredBy?: Principal;
+    referredByAssociateId?: string;
     phone: string;
+    associateId: string;
 } {
     return {
         status: value.status,
@@ -684,7 +708,9 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
         name: value.name,
         email: value.email,
         referredBy: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.referredBy)),
-        phone: value.phone
+        referredByAssociateId: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.referredByAssociateId)),
+        phone: value.phone,
+        associateId: value.associateId
     };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -714,7 +740,7 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         associate: value.associate
     };
 }
-function from_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -726,20 +752,22 @@ function from_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Ui
 function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_PayoutRequest>): Array<PayoutRequest> {
     return value.map((x)=>from_candid_PayoutRequest_n4(_uploadFile, _downloadFile, x));
 }
-function to_candid_UserProfile_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
-    return to_candid_record_n14(_uploadFile, _downloadFile, value);
+function to_candid_UserProfile_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n15(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     status: string;
     referralCode: string;
     joinDate: Time;
     name: string;
     email: string;
     referredBy?: Principal;
+    referredByAssociateId?: string;
     phone: string;
+    associateId: string;
 }): {
     status: string;
     referralCode: string;
@@ -747,7 +775,9 @@ function to_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     name: string;
     email: string;
     referredBy: [] | [Principal];
+    referredByAssociateId: [] | [string];
     phone: string;
+    associateId: string;
 } {
     return {
         status: value.status,
@@ -756,7 +786,9 @@ function to_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         name: value.name,
         email: value.email,
         referredBy: value.referredBy ? candid_some(value.referredBy) : candid_none(),
-        phone: value.phone
+        referredByAssociateId: value.referredByAssociateId ? candid_some(value.referredByAssociateId) : candid_none(),
+        phone: value.phone,
+        associateId: value.associateId
     };
 }
 function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {

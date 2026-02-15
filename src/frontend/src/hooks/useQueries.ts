@@ -69,6 +69,21 @@ export function useRegisterWithReferral() {
   });
 }
 
+export function useRegisterWithUplineId() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ profile, uplineAssociateId }: { profile: UserProfile; uplineAssociateId: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.registerWithUplineId(profile, uplineAssociateId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
 // ============ ADMIN & ROLES ============
 
 export function useIsCallerAdmin() {
