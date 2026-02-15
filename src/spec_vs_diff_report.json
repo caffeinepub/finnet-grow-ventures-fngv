@@ -1,0 +1,49 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-14T22:25:38.607Z",
+  "summary": "BuildRequest contains no explicit requirements or acceptance criteria. The diff modifies backend/main.mo with substantial new/expanded backend data models and API logic (profiles/referrals/etc.) and updates project_state.json metadata, which appear to add/extend functionality beyond a “clarify requested features” task.",
+  "missing_requirements": [],
+  "hallucinated_features": [
+    {
+      "description": "Implemented/expanded backend data models and persistent storage for user profiles, products, orders, commissions, payout requests, wallets, referrals, and referral codes, plus new ID counters.",
+      "reason": "No requirements were specified in the BuildRequest; these are functional changes not requested.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Added/expanded authorization/permission checks and included authorization mixin/state initialization.",
+      "reason": "No requirements were specified; BuildRequest focused on clarification and explicitly had no requirements.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Added/expanded user profile management endpoints (e.g., getCallerUserProfile, getUserProfile, saveCallerUserProfile) including referral code uniqueness validation.",
+      "reason": "No requirements were specified; these are new/changed backend behaviors.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Added/expanded referral registration flow entrypoint (registerWithReferral) allowing guest/anonymous registration (commented as such).",
+      "reason": "No requirements were specified; this changes/adds backend behavior.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Updated project metadata/state (projectStateVersion and existing_features listing referencing REQ-1..REQ-7, etc.).",
+      "reason": "BuildRequest had no requirements and did not ask to update project tracking metadata.",
+      "evidence": [
+        "project_state.json"
+      ]
+    }
+  ],
+  "confidence": 0.68,
+  "changed_files": [
+    "backend/main.mo",
+    "project_state.json"
+  ]
+}

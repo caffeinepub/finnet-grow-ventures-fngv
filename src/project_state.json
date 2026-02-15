@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Build an MLM (network marketing) app for FINNET GROW VENTURES (FNGV) to sell services/products with an associate-based referral program and payouts for referrals.",
+  "architectural_notes": [
+    "App is an MLM (network marketing) platform for FINNET GROW VENTURES (FNGV) centered on associates, referrals, and payouts."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-implement-authentication-via-internet-identity-and-create-an-associate-account-model-so-a-signed-in-user-is-recognized-as-an-fngv-associate-with-a-profile-e-g-name-phone-email-join-date-status",
+      "title": "Implement authentication via Internet Identity and create an Associate account model so a signed-in user is recognized as an FNGV associate with a profile (e.g., name, phone/email, join date, status).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-referral-program-allow-an-associate-to-invite-register-new-associates-with-a-referral-code-link-store-the-referrer-relationship-and-provide-a-view-of-an-associate-s-direct-referrals",
+      "title": "Implement the referral program: allow an associate to invite/register new associates with a referral code/link, store the referrer relationship, and provide a view of an associate’s direct referrals.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-a-simple-network-view-that-shows-an-associate-s-downline-structure-at-minimum-a-tree-or-grouped-lists-for-level-1-and-level-2-referrals-with-counts-and-basic-details",
+      "title": "Provide a simple network view that shows an associate’s downline structure (at minimum: a tree or grouped lists for Level 1 and Level 2 referrals) with counts and basic details.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-product-and-service-catalog-module-admins-or-a-defined-privileged-role-can-create-update-catalog-items-and-associates-can-browse-the-catalog-and-view-item-details",
+      "title": "Implement a product and service catalog module: admins (or a defined privileged role) can create/update catalog items, and associates can browse the catalog and view item details.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-basic-sales-flow-allow-associates-to-place-an-order-for-a-product-service-store-order-records-and-show-order-history-for-the-signed-in-associate",
+      "title": "Implement a basic sales flow: allow associates to place an order for a product/service, store order records, and show order history for the signed-in associate.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-commission-earnings-tracking-tied-to-referrals-and-sales-record-commission-events-in-a-ledger-compute-an-associate-s-available-balance-and-show-an-earnings-dashboard",
+      "title": "Implement commission/earnings tracking tied to referrals and sales: record commission events in a ledger, compute an associate’s available balance, and show an earnings dashboard.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-payout-request-flow-associates-can-request-withdrawal-of-available-balance-admins-can-review-and-mark-requests-as-paid-rejected-and-the-ui-reflects-payout-status-and-remaining-balance",
+      "title": "Add a payout request flow: associates can request withdrawal of available balance, admins can review and mark requests as paid/rejected, and the UI reflects payout status and remaining balance.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-coherent-visual-theme-and-layout-for-the-fngv-app-typography-colors-spacing-card-table-styles-and-apply-it-consistently-across-all-screens-without-using-a-blue-purple-primary-palette",
+      "title": "Create a coherent visual theme and layout for the FNGV app (typography, colors, spacing, card/table styles) and apply it consistently across all screens without using a blue/purple primary palette.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-core-screens-and-navigation-for-the-mvp-sign-in-dashboard-profile-referrals-network-catalog-orders-earnings-payouts-and-admin-for-catalog-payouts-with-route-protection-based-on-authentication-and-role",
+      "title": "Add core screens and navigation for the MVP: Sign in, Dashboard, Profile, Referrals/Network, Catalog, Orders, Earnings, Payouts, and Admin (for catalog + payouts) with route protection based on authentication and role.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-brand-assets-logo-simple-background-and-display-them-in-the-app-e-g-in-header-login-landing-from-frontend-public-assets-generated-without-serving-images-through-the-backend",
+      "title": "Add generated static brand assets (logo + simple background) and display them in the app (e.g., in header/login/landing) from frontend/public/assets/generated without serving images through the backend.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Associate onboarding and account management (business partners join as associates)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Referral program: associates can refer other associates and build a network",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Commission/payout system for referral earnings",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Product and service catalog/sales module",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add a simple associate dashboard to track referrals and earnings at a glance",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "FINNET GROW VENTURES (FNGV)",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

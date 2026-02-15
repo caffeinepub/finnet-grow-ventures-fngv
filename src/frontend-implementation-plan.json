@@ -1,0 +1,6 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "No-op: BuildRequest has no frontend requirements",
+  "requirements": []
+}

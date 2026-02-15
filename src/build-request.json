@@ -1,0 +1,19 @@
+{
+  "kind": "build_request",
+  "title": "Clarify requested features (already implemented in current app)",
+  "priority": "normal",
+  "requirements": [],
+  "constraints": [
+    "Do not modify files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if a stable-state upgrade is required.",
+    "Use English for all user-facing UI text."
+  ],
+  "nonGoals": [
+    "Adding new product features beyond what is already implemented (authentication, dashboard, referrals, network view, catalog, orders, earnings, payouts, admin).",
+    "Changing the technology stack or adding external services/integrations."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}
